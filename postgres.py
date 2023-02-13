@@ -1,17 +1,13 @@
 import psycopg2
-import pickle
+import pandas as pd
+from sqlalchemy import create_engine, URL, text
 
+ 
 
-class Conexion:
-    user = ''
-    password = ''
-    host = ''
-    port = ''
-    database = ''
-    sentencia = ''
-
-    def __init__(self, user, password, host, port, database):
-        self.user = user
+class Inst:
+    
+    def __init__(self, username, password, host, port, database):
+        self.username = username
         self.password = password
         self.host = host
         self.port = port
@@ -19,36 +15,28 @@ class Conexion:
 
 
 
-
     def __str__(self):
-        global conex
-        global conexion
-        global registros
-        
-        conexion = psycopg2.connect(
-            user=self.user,
-            password=self.password,
-            host=self.host,
-            port=self.port,
-            database=self.database
-            )
-        
-
-        cursor = conexion.cursor()
-        sentencia = str(input('Escribe el query: '))
-        cursor.execute(sentencia)
-        registros = cursor.fetchall()
-        
-        return 'La consulta se encuentra guardada'
+        global con
 
 
-    def guardar_archivo(self):
+        url_object = URL.create(
+        "postgresql",
+        username=self.username,
+        password=self.password,  # plain (unescaped) text
+        host=self.host,
+        port=self.port,
+        database=self.database,
+                )
+        engie = create_engine(url_object)
+        con = engie.connect()
 
-        file1 = open('prueba.txt', 'wb',)
-        pickle.dump(registros, file1)
-        file1.close
+        return 'Conexion Establecida'
 
-        
-usuario_1 = Conexion('postgres','R3fr3sc0','127.0.0.1','5432','test_db')
-print(usuario_1)
-usuario_1.guardar_archivo()
+    def guardarArchivo(self):
+        table_df = pd.read_sql_table(table_name='persona',con=con)     
+        table_df.to_csv('prueba.csv', index=False, sep=';')
+
+
+persona1 = Inst('postgres','R3fr3sc0','127.0.0.1','5432','test_db')
+print(persona1)
+persona1.guardarArchivo()
